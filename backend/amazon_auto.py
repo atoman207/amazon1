@@ -197,11 +197,8 @@ OTP_SUBMIT_SELECTORS = [
 # Selectors for filtering (exact XPaths provided by user)
 CATEGORY_DROPDOWN_BUTTON = "xpath=/html/body/div[1]/div[1]/div/div/div[3]/section/div/div/div/div/div[1]/div[2]/div[1]/div[1]/span/span/input"
 
-# Category checkboxes (IT関連機器, 医療用品・消耗品, 日用品・食品・飲料)
-# Clicking the div container which contains the label and checkbox
-CATEGORY_IT_EQUIPMENT = "xpath=/html/body/div[1]/div[1]/div/div/div[3]/section/div/div/div/div/div[1]/div[2]/div[1]/div[2]/div[2]/fieldset/div[3]"
-CATEGORY_MEDICAL_SUPPLIES = "xpath=/html/body/div[1]/div[1]/div/div/div[3]/section/div/div/div/div/div[1]/div[2]/div[1]/div[2]/div[2]/fieldset/div[5]"
-CATEGORY_DAILY_NECESSITIES = "xpath=/html/body/div[1]/div[1]/div/div/div[3]/section/div/div/div/div/div[1]/div[2]/div[1]/div[2]/div[2]/fieldset/div[7]"
+# Category checkboxes: select by label text (not position) so order changes don't break selection
+# Use: div[data-a-input-name="category"] that contains span with exact category name from SELECTED_CATEGORIES
 
 # Show results button after category selection
 CATEGORY_SHOW_RESULTS_BUTTON = "xpath=/html/body/div[1]/div[1]/div/div/div[3]/section/div/div/div/div/div[1]/div[2]/div[1]/div[2]/div[3]/div[2]/span/span"
@@ -2071,59 +2068,25 @@ def apply_filters_and_sort(page):
         except Exception as e:
             print(f"[WARNING] Could not scroll modal: {e}")
         
-        # Select the three categories using exact XPaths
-        print("\n[2/5] Selecting 3 categories...")
-        
-        # Category 1: IT関連機器 (IT-related equipment)
-        print("  [1/3] Selecting IT-related equipment...")
-        it_checkbox = page.locator(CATEGORY_IT_EQUIPMENT)
-        if it_checkbox.count() > 0:
-            try:
-                # Scroll element into view before clicking
-                it_checkbox.scroll_into_view_if_needed(timeout=3000)
-                time.sleep(0.3)
-                # Click the div container
-                it_checkbox.click(force=True, timeout=3000)
-                time.sleep(0.5)
-                print("    [SUCCESS] IT-related equipment selected")
-            except Exception as e:
-                print(f"    [ERROR] Failed to select IT equipment: {e}")
-        else:
-            print("    [WARNING] IT-related equipment checkbox not found")
-        
-        # Category 2: 医療用品・消耗品 (Medical supplies and consumables)
-        print("  [2/3] Selecting Medical supplies and consumables...")
-        medical_checkbox = page.locator(CATEGORY_MEDICAL_SUPPLIES)
-        if medical_checkbox.count() > 0:
-            try:
-                # Scroll element into view before clicking
-                medical_checkbox.scroll_into_view_if_needed(timeout=3000)
-                time.sleep(0.3)
-                # Click the div container
-                medical_checkbox.click(force=True, timeout=3000)
-                time.sleep(0.5)
-                print("    [SUCCESS] Medical supplies selected")
-            except Exception as e:
-                print(f"    [ERROR] Failed to select medical supplies: {e}")
-        else:
-            print("    [WARNING] Medical supplies checkbox not found")
-        
-        # Category 3: 日用品・食品・飲料 (Daily necessities, food, and beverages)
-        print("  [3/3] Selecting Daily necessities, food, and beverages...")
-        daily_checkbox = page.locator(CATEGORY_DAILY_NECESSITIES)
-        if daily_checkbox.count() > 0:
-            try:
-                # Scroll element into view before clicking
-                daily_checkbox.scroll_into_view_if_needed(timeout=3000)
-                time.sleep(0.3)
-                # Click the div container
-                daily_checkbox.click(force=True, timeout=3000)
-                time.sleep(0.5)
-                print("    [SUCCESS] Daily necessities selected")
-            except Exception as e:
-                print(f"    [ERROR] Failed to select daily necessities: {e}")
-        else:
-            print("    [WARNING] Daily necessities checkbox not found")
+        # Select the three categories by label text (not position), so order changes don't matter
+        print("\n[2/5] Selecting 3 categories by name...")
+        for idx, category_name in enumerate(SELECTED_CATEGORIES, 1):
+            print(f"  [{idx}/3] Selecting '{category_name}'...")
+            # Find the checkbox div that contains a span with this exact label text
+            checkbox_div = page.locator('div[data-a-input-name="category"]').filter(
+                has=page.get_by_text(category_name, exact=True)
+            ).first
+            if checkbox_div.count() > 0:
+                try:
+                    checkbox_div.scroll_into_view_if_needed(timeout=3000)
+                    time.sleep(0.3)
+                    checkbox_div.click(force=True, timeout=3000)
+                    time.sleep(0.5)
+                    print(f"    [SUCCESS] '{category_name}' selected")
+                except Exception as e:
+                    print(f"    [ERROR] Failed to select '{category_name}': {e}")
+            else:
+                print(f"    [WARNING] Checkbox not found for '{category_name}'")
         
         # Click "Show Results" button for categories
         print("\n[INFO] Clicking 'Show Results' button for categories...")
