@@ -18,11 +18,11 @@ interface ApiStatus {
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? '/api'
 
-/** Format timestamp as original time + 8 hours, in JST format. */
+/** Format ISO timestamp as 8 hours earlier, in Japan Standard Time (JST). */
 function formatJST(isoString: string): string {
   const d = new Date(isoString)
-  const adjusted = new Date(d.getTime() + 8 * 60 * 60 * 1000)
-  const formatted = adjusted.toLocaleString('ja-JP', {
+  const eightHoursEarlier = new Date(d.getTime() - 8 * 60 * 60 * 1000)
+  const formatted = eightHoursEarlier.toLocaleString('ja-JP', {
     timeZone: 'Asia/Tokyo',
     year: 'numeric',
     month: '2-digit',

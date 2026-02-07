@@ -19,3 +19,6 @@ requests>=2.28.0
 # Control API for frontend
 fastapi>=0.115.0
 uvicorn>=0.32.0
+
+# IANA timezone data (required for ZoneInfo on Windows; e.g. Asia/Tokyo)
+tzdata>=2024.1

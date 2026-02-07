@@ -7,9 +7,15 @@ import os
 import subprocess
 import sys
 import threading
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from zoneinfo import ZoneInfo
+
+try:
+    from zoneinfo import ZoneInfo
+    JST = ZoneInfo("Asia/Tokyo")
+except Exception:
+    # Windows without tzdata: use fixed UTC+9 for JST
+    JST = timezone(timedelta(hours=9))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,7 +54,7 @@ def _read_status() -> dict:
 
 def _write_status(status: str, message: str | None = None) -> None:
     utc_now = datetime.now(timezone.utc)
-    jst_now = utc_now.astimezone(ZoneInfo("Asia/Tokyo"))
+    jst_now = utc_now.astimezone(JST)
     payload = {
         "status": status,
         "lastRun": jst_now.strftime("%Y-%m-%dT%H:%M:%S+09:00"),
